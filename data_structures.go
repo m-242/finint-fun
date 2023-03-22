@@ -21,8 +21,17 @@ func (i *Investigation) AddAddress(a *Address) {
 }
 
 func (i *Investigation) AddTransaction(t *Transaction) {
-	i.logger.Printf("Adding %s-(%d%s)->%s to the exploration", t.From, t.Value, i.Currency, t.To)
+	i.logger.Printf("Adding %s-(%+f%s)->%s to the exploration\n", t.From, t.Value, i.Currency, t.To)
 	i.Transactions = append(i.Transactions, t)
+}
+
+func (i *Investigation) HasAddressWithID(id string) bool {
+	for _, a := range i.InvolvedAddresses {
+		if id == a.Identifier {
+			return true
+		}
+	}
+	return false
 }
 
 // Nodes/Address of a crypto currency wallet
@@ -47,10 +56,10 @@ func (address *Address) isNew(invest Investigation) bool {
 
 // Transaction/Edge
 type Transaction struct {
-	From  string // Identifiers of addresses
-	To    string
-	Value float64
-	Date  time.Time
+	From  string    `json:"from"` // Identifiers of addresses
+	To    string    `json:"to"`
+	Value float64   `json:"value"`
+	Date  time.Time `json:"date"`
 }
 
 func (t1 *Transaction) equals(t2 Transaction) bool {

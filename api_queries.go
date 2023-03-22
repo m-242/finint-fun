@@ -84,11 +84,20 @@ func lookupBStransactions(invest *Investigation, address *Address) ([]Transactio
 	ret := []Transaction{}
 
 	for i := 0; i < 16; i++ {
+		b := rand.Int() % 2
+
 		t = Transaction{
-			From:  identifiers[rand.Intn(len(identifiers))],
 			To:    identifiers[rand.Intn(len(identifiers))],
 			Value: rand.Float64() * 150.0,
 			Date:  randate(),
+		}
+
+		if b == 1 {
+			t.From = identifiers[rand.Intn(len(identifiers))]
+			t.To = address.Identifier
+		} else {
+			t.From = address.Identifier
+			t.To = identifiers[rand.Intn(len(identifiers))]
 		}
 
 		ret = append(ret, t)
