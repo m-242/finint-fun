@@ -1,0 +1,41 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>{{ Investigation.Currency }} Investigation </title>
+    <script src="cytoscape.js"></script>
+</head>
+
+<style>
+    #cy {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+    }
+</style>
+
+<body>
+    <div id="cy"></div>
+    <script>
+      var cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: [
+          { data: { id: 'a' } },
+          { data: { id: 'b' } },
+          {
+            data: {
+              id: 'ab',
+              source: 'a',
+              target: 'b'
+            }
+          }]
+        });
+        cy.layout({
+            name: 'cose'
+        }).run();
+    </script>
+</body>
+</html>
