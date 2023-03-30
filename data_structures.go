@@ -8,19 +8,19 @@ import (
 // Investigation is the big data structure
 // that holds every bit of data
 type Investigation struct {
-	InvolvedAddresses []*Address     `json:"addresses"`
-	Transactions      []*Transaction `json:"transactions"`
-	Currency          string         `json:"currency"`
-	ApiKey            string         `json:"-"` // The api key used to makes requests to the backend api
-	logger            log.Logger     `json:"-"`
+	InvolvedAddresses []Address     `json:"addresses"`
+	Transactions      []Transaction `json:"transactions"`
+	Currency          string        `json:"currency"`
+	ApiKey            string        `json:"-"` // The api key used to makes requests to the backend api
+	logger            log.Logger    `json:"-"`
 }
 
-func (i *Investigation) AddAddress(a *Address) {
+func (i *Investigation) AddAddress(a Address) {
 	i.logger.Printf("Adding address %s to the exploration\n", a.Identifier)
 	i.InvolvedAddresses = append(i.InvolvedAddresses, a)
 }
 
-func (i *Investigation) AddTransaction(t *Transaction) {
+func (i *Investigation) AddTransaction(t Transaction) {
 	i.logger.Printf("Adding %s-(%+f%s)->%s to the exploration\n", t.From, t.Value, i.Currency, t.To)
 	i.Transactions = append(i.Transactions, t)
 }
@@ -45,9 +45,9 @@ func (a1 *Address) equals(a2 Address) bool {
 	return a1.Identifier == a2.Identifier
 }
 
-func (address *Address) isNew(invest Investigation) bool {
+func (address Address) isNew(invest Investigation) bool {
 	for _, a2 := range invest.InvolvedAddresses {
-		if address.equals(*a2) {
+		if address.equals(a2) {
 			return false
 		}
 	}
@@ -70,7 +70,7 @@ func (t1 *Transaction) equals(t2 Transaction) bool {
 
 func (t Transaction) isNew(invest Investigation) bool {
 	for _, t2 := range invest.Transactions {
-		if t.equals(*t2) {
+		if t.equals(t2) {
 			return false
 		}
 	}
