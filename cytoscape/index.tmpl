@@ -3,8 +3,8 @@
 <html>
 
 <head>
-    <title>{{ Investigation.Currency }} Investigation </title>
-    <script src="cytoscape.js"></script>
+    <title>INVEST_CURRENCY Investigation </title>
+    <script>CYTOSCAPE_SOURCE</script>
 </head>
 
 <style>
@@ -22,19 +22,30 @@
     <script>
       var cy = cytoscape({
         container: document.getElementById('cy'),
-        elements: [
-          { data: { id: 'a' } },
-          { data: { id: 'b' } },
-          {
-            data: {
-              id: 'ab',
-              source: 'a',
-              target: 'b'
+        elements: INVEST_DATA,
+        style: [
+        {
+            selector: 'node',
+            style: {
+                'label': 'data(id)'
             }
-          }]
-        });
-        cy.layout({
-            name: 'cose'
+        }]});
+        
+        cy.layout({      
+            name: 'fcose',
+            nodeDimensionsIncludeLabels: false,
+            // Node repulsion (non overlapping) multiplier
+            nodeRepulsion: node => 4500,
+            // Ideal edge (non nested) length
+            idealEdgeLength: edge => 50,
+            // Divisor to compute edge forces
+            edgeElasticity: edge => 0.45,
+            // Nesting factor (multiplier) to compute ideal edge length for nested edges
+            nestingFactor: 0.1,
+            // Maximum number of iterations to perform - this is a suggested value and might be adjusted by the algorithm as required
+            numIter: 2500,
+            // For enabling tiling
+            tile: true,
         }).run();
     </script>
 </body>

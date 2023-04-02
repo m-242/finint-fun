@@ -42,27 +42,16 @@ func (invest *Investigation) ToSVG(path string) error {
 		}
 	}
 
-	for k, v := range nodes {
-		fmt.Printf("%s: %p\n", k, v)
-	}
-
 	for _, edge := range invest.Transactions {
-		fmt.Printf("==========\n%s - (%f) ->%s\n", edge.From, edge.Value, edge.To)
-
-		for k, v := range nodes {
-			fmt.Printf("%s: %p\n", k, v)
-		}
 
 		x, ok := nodes[edge.From]
 		if !ok {
-			fmt.Printf("aaa")
 			x, _ := graph.CreateNode(edge.From)
 			x.SetShape("circle")
 		}
 
 		y, ok2 := nodes[edge.To]
 		if !ok2 {
-			fmt.Println("bbb")
 			y, _ := graph.CreateNode(edge.To)
 			y.SetShape("circle")
 		}
@@ -73,7 +62,7 @@ func (invest *Investigation) ToSVG(path string) error {
 			y,
 		)
 		if err != nil {
-			fmt.Printf("Coul'nt print edge")
+			invest.logger.Printf("Coul'nt print edge")
 		} else {
 			v.SetPenWidth(edge.Value/(maxValue-minValue)*(maxVertice-minVertice) + minVertice)
 			v.SetLabel(fmt.Sprintf("%f %s", edge.Value, invest.Currency))

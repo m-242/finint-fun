@@ -2,8 +2,10 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"io/ioutil"
 	"log"
+	"os"
 )
 
 func Investigate(
@@ -44,10 +46,7 @@ func (invest *Investigation) explore(
 	transactionsLookup transactionFunc,
 ) error {
 	invest.logger.Printf("Investigating from %s\n", startingPoint)
-	addr, err := addressLookup(invest, startingPoint, tags)
-	if err != nil {
-		fmt.Printf("Bad aaa")
-	}
+	addr, _ := addressLookup(invest, startingPoint, tags)
 
 	if addr.Identifier == "" {
 		return nil
@@ -61,7 +60,7 @@ func (invest *Investigation) explore(
 		return nil
 	}
 
-	transactions, err := transactionsLookup(invest, &addr)
+	transactions, _ := transactionsLookup(invest, &addr)
 	for _, t := range transactions {
 		if t.From == "" || t.To == "" {
 			continue
@@ -79,53 +78,28 @@ func (invest *Investigation) explore(
 		invest.AddTransaction(t)
 	}
 	return nil
+}
 
-	// TODO
-	//	invest.logger.Printf("Investigating from %s\n", startingPoint)
-	//
-	//	addr, err := addressLookup(invest, startingPoint, tags)
-	//	if err != nil {
-	//		// TODO traitement d'erreur
-	//		invest.logger.Printf("Could'nt investigate node %s\n", startingPoint)
-	//		return err
-	//	}
-	//
-	//	transactions, err := transactionsLookup(invest, &addr)
-	//	if err != nil {
-	//		invest.logger.Printf("Couldn't get node %s's transactions\n", startingPoint)
-	//		return err
-	//	}
-	//
-	//	if addr.isNew(*invest) {
-	//		invest.AddAddress(&addr)
-	//	}
-	//
-	//	var newAddressID string
-	//
-	//	for _, trans := range transactions {
-	//		if trans.isNew(*invest) {
-	//			if trans.From == startingPoint {
-	//				newAddressID = trans.To
-	//			} else if trans.To == startingPoint {
-	//				newAddressID = trans.To
-	//			}
-	//
-	//			if invest.HasAddressWithID(newAddressID) {
-	//				invest.AddTransaction(&trans)
-	//			} else if depth > 0 {
-	//				err = invest.explore(newAddressID, []string{}, depth-1, addressLookup, transactionsLookup)
-	//				if err != nil {
-	//					invest.logger.Printf("Couldn't explore from %s\n", newAddressID)
-	//				}
-	//			} else {
-	//				addr, err := addressLookup(invest, newAddressID, []string{})
-	//				if err != nil {
-	//					invest.logger.Printf("Couldn't investigate border node %s\n", newAddressID)
-	//				}
-	//				invest.AddAddress(&addr)
-	//			}
-	//		}
-	//	}
+func (invest *Investigation) toJSON(path string) error {
+	file, err := json.MarshalIndent(invest, "", " ")
+	if err != nil {
+		invest.logger.Printf("Couldn't marshall invest to json.")
+		return err
+	}
 
-	return nil
+	return ioutil.WriteFile(path, file, 0644)
+}
+
+func fromJSON(path string) (Investigation, error) {
+	var iv Investigation
+
+	jsonFile, _ := os.Open(path)
+	// read our opened jsonFile as a byte array.
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	// we unmarshal our byteArray which contains our
+	// jsonFile's content into 'users' which we defined above
+	json.Unmarshal(byteValue, &iv)
+
+	return iv, nil
 }
