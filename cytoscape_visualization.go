@@ -40,18 +40,30 @@ func (invest *Investigation) toCytoscapeJS(path string) error {
 	array := "["
 
 	for _, node := range invest.InvolvedAddresses {
-		array += fmt.Sprintf(
-			"{ data: { id: '%s', width: '%d' } }",
-			node.Identifier,
-			int(node.Balance/(maxBalance-minBalance)*(maxNode-minNode)+minNode),
-		)
+		if len(node.Tags) != 0 {
+			array += fmt.Sprintf(
+				"{ data: { id: '%s', width: '%d'} }",
+				node.Identifier,
+				int(node.Balance/(maxBalance-minBalance)*(maxNode-minNode)+minNode),
+			)
+		} else {
+			array += fmt.Sprintf(
+				"{ data: { id: '%s', width: '%d'} }",
+				node.Identifier,
+				int(node.Balance/(maxBalance-minBalance)*(maxNode-minNode)+minNode),
+			)
+		}
 
 		array += ","
 	}
 
 	rMax := len(invest.Transactions)
 	for r, trans := range invest.Transactions {
-		array += fmt.Sprintf("{data: {source: '%s', target: '%s' }}", trans.From, trans.To)
+		array += fmt.Sprintf(
+			"{data: {source: '%s', target: '%s', shape:'arrow' }}",
+			trans.From,
+			trans.To,
+		)
 
 		if r != rMax {
 			array += ","
