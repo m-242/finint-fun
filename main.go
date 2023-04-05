@@ -10,13 +10,13 @@ func init() {
 }
 
 func main() {
-	invest := Investigate(
-		"EQBq_FU3HKy1NykhavHmxh05IBhM6X1u2Y489AcvaXdg29ue",
-		[]string{"Killnet"},
-		3,
-		"TON",
-		"",
-	)
+	//invest := Investigate(
+	//	"EQBq_FU3HKy1NykhavHmxh05IBhM6X1u2Y489AcvaXdg29ue",
+	//	[]string{"Killnet"},
+	//	3,
+	//	"TON",
+	//	"",
+	//)
 	//invest := Investigate(
 	//	"A",
 	//	[]string{"Killnet"},
@@ -32,8 +32,8 @@ func main() {
 	// }
 	// fmt.Println(string(j))
 
-	//invest, _ := fromJSON("/tmp/invest.json")
-	invest.toJSON("/tmp/invest.json")
+	invest, _ := fromJSON("/tmp/invest.json")
+	//invest.toJSON("/tmp/invest.json")
 	invest.toCytoscapeJS("/tmp/invest.html")
 	//invest.ToSVG("/tmp/invest_test2.svg")
 }

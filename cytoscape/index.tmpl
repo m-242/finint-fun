@@ -4,7 +4,8 @@
 
 <head>
     <title>INVEST_CURRENCY Investigation </title>
-    <script>CYTOSCAPE_SOURCE</script>
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
     <script src="https://unpkg.com/layout-base/layout-base.js"></script>
     <script src="https://unpkg.com/cose-base/cose-base.js"></script>
     <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script>
@@ -23,7 +24,8 @@
 <body>
     <div id="cy"></div>
     <script>
-      var cy = cytoscape({
+    // Defining the graph, and putting in the investigation data
+    var cy = cytoscape({
         container: document.getElementById('cy'),
         elements: INVEST_DATA,
         style: [
@@ -31,10 +33,9 @@
             selector: 'node',
             style: {
                 'content': 'data(id)',
-                    width: function(ele){ return ele.degree(); },
-    height: function(ele){ return ele.degree(); }
+                'width': 'data(weight)', 
+                'height': 'data(weight)',
             }
-        
         },
         {
             selector: 'edge',
@@ -42,28 +43,34 @@
                 'line-color': '#ccc',
                 'target-arrow-color': '#ccc',
                 'target-arrow-shape': 'triangle',
-                'curve-style': 'bezier'
+                'curve-style': 'bezier',
+                'label': 'data(label)'
             }
         }
-
-        ]});
+    ]});
         
-        cy.layout({      
-            name: 'fcose',
-            nodeDimensionsIncludeLabels: false,
-            // Node repulsion (non overlapping) multiplier
-            nodeRepulsion: node => 500000,
-            // Ideal edge (non nested) length
-            idealEdgeLength: edge => 500,
-            // Divisor to compute edge forces
-            edgeElasticity: edge => 0.01,
-            // Nesting factor (multiplier) to compute ideal edge length for nested edges
-            nestingFactor: 0.1,
-            // Maximum number of iterations to perform - this is a suggested value and might be adjusted by the algorithm as required
-            numIter: 2500,
-            // For enabling tiling
-            tile: true,
-        }).run();
+    // Graph Layout
+    cy.layout({      
+        name: 'fcose',
+        nodeDimensionsIncludeLabels: false,
+        // Node repulsion (non overlapping) multiplier
+        nodeRepulsion: node => 10000000,
+        // Ideal edge (non nested) length
+        idealEdgeLength: edge => 500,
+        // Divisor to compute edge forces
+        edgeElasticity: edge => 0.01,
+        // Nesting factor (multiplier) to compute ideal edge length for nested edges
+        nestingFactor: 0.1,
+        // Maximum number of iterations to perform - this is a suggested value and might be adjusted by the algorithm as required
+        numIter: 2500,
+        // For enabling tiling
+        tile: true,
+    }).run();
+
+
+    // TODO define right click actions
+
+    // TODO define sliders
     </script>
 </body>
 </html>

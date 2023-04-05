@@ -5,12 +5,9 @@ import (
 	// "log"
 	"io/ioutil"
 	"strings"
+
+	_ "embed"
 )
-
-import _ "embed"
-
-//go:embed cytoscape/cytoscape.js
-var cytoscape_source string
 
 //go:embed cytoscape/index.tmpl
 var cytoscape_output_template string
@@ -18,20 +15,10 @@ var cytoscape_output_template string
 // yup, fucking disgusting
 func (invest *Investigation) toCytoscapeJS(path string) error {
 	minBalance, maxBalance := invest.getNodeMinMax()
-	minNode, maxNode := 1.0, 10.0
-	//
-	// minValue, maxValue := invest.getVerticeMinMax()
-	// minVertice, maxVertice := 3.0, 25.0
+	minNode, maxNode := 30.0, 300.0
 
 	cytoscape_tmpl := strings.Replace(
 		cytoscape_output_template,
-		"CYTOSCAPE_SOURCE",
-		cytoscape_source,
-		1,
-	)
-
-	cytoscape_tmpl = strings.Replace(
-		cytoscape_tmpl,
 		"INVEST_CURRENCY",
 		invest.Currency,
 		1,
@@ -40,33 +27,39 @@ func (invest *Investigation) toCytoscapeJS(path string) error {
 	array := "["
 
 	for _, node := range invest.InvolvedAddresses {
-		if len(node.Tags) != 0 {
+		if len(node.Tags) == 0 {
 			array += fmt.Sprintf(
-				"{ data: { id: '%s', width: '%d'} }",
+				"{ data: { id: '%s', weight: %d, balance: %d } }",
 				node.Identifier,
 				int(node.Balance/(maxBalance-minBalance)*(maxNode-minNode)+minNode),
+				int(node.Balance),
 			)
 		} else {
 			array += fmt.Sprintf(
-				"{ data: { id: '%s', width: '%d'} }",
+				"{ data: { id: '%s', weight: %d, balance: %d, style: { 'background-color': 'red'} } }",
 				node.Identifier,
 				int(node.Balance/(maxBalance-minBalance)*(maxNode-minNode)+minNode),
+				int(node.Balance),
 			)
+
 		}
 
-		array += ","
+		array += ",\n"
 	}
 
 	rMax := len(invest.Transactions)
 	for r, trans := range invest.Transactions {
 		array += fmt.Sprintf(
-			"{data: {source: '%s', target: '%s', shape:'arrow' }}",
+			"{data: {source: '%s', target: '%s', shape:'arrow', label: '%s', value: %f, currency: '%s' }}",
 			trans.From,
 			trans.To,
+			fmt.Sprintf("%.2f %s", trans.Value, invest.Currency),
+			trans.Value,
+			invest.Currency,
 		)
 
 		if r != rMax {
-			array += ","
+			array += ",\n"
 		}
 	}
 
