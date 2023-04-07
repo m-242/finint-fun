@@ -25,6 +25,14 @@ func main() {
 	//	"",
 	//)
 
+	invest := Investigate(
+		"bc1qt8ae83jf98rdffw2vmhcgg9l8w3lqy844vhdnt",
+		[]string{"Killnet"},
+		3,
+		"BTC",
+		"",
+	)
+
 	// j, err := json.Marshal(invest)
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -32,7 +40,7 @@ func main() {
 	// }
 	// fmt.Println(string(j))
 
-	invest, _ := fromJSON("/tmp/invest.json")
+	//invest, _ := fromJSON("/tmp/invest.json")
 	//invest.toJSON("/tmp/invest.json")
 	invest.toCytoscapeJS("/tmp/invest.html")
 	//invest.ToSVG("/tmp/invest_test2.svg")

@@ -21,10 +21,12 @@ var (
 	addressFunctions = map[string]addressFunc{
 		"TON": lookupTONAddress,
 		"BS":  lookupBSAddress,
+		"BTC": lookupBTCAddress,
 	}
 	transactionFunctions = map[string]transactionFunc{
 		"TON": lookupTONtransactions,
 		"BS":  lookupBStransactions,
+		"BTC": lookupBTCtransaction,
 	}
 )
 
@@ -42,76 +44,93 @@ type btcAddrAndTxs struct {
 		Ver         int    `json:"ver"`
 		VinSz       int    `json:"vin_sz"`
 		VoutSz      int    `json:"vout_sz"`
-		LockTime    string `json:"lock_time"`
+		LockTime    int    `json:"lock_time"`
 		Size        int    `json:"size"`
 		RelayedBy   string `json:"relayed_by"`
 		BlockHeight int    `json:"block_height"`
-		TxIndex     string `json:"tx_index"`
+		TxIndex     int    `json:"tx_index"`
 		Inputs      []struct {
 			PrevOut struct {
-				Hash    string `json:"hash"`
-				Value   string `json:"value"`
-				TxIndex string `json:"tx_index"`
-				N       string `json:"n"`
+				Hash  string `json:"hash"`
+				Value int    `json:"value"`
 			} `json:"prev_out"`
 			Script string `json:"script"`
 		} `json:"inputs"`
 		Out []struct {
-			Value  string `json:"value"`
+			Value  int    `json:"value"`
 			Hash   string `json:"hash"`
 			Script string `json:"script"`
 		} `json:"out"`
 	} `json:"txs"`
 }
 
-// TODO
+func btcHelper(invest *Investigation, identifier string) (btcAddrAndTxs, error) {
+	rc := 429
+	for rc != 200 {
+		url := fmt.Sprintf("https://blockchain.info/rawaddr/%s", identifier)
+		res, err := http.Get(url)
+		if err != nil {
+			invest.logger.Fatalln(err)
+		}
+
+		rc = res.StatusCode
+
+		if rc == 429 {
+			time.Sleep(time.Second * 5)
+			invest.logger.Println("NOPE")
+		} else {
+			body, _ := ioutil.ReadAll(res.Body)
+			var tmpAddress btcAddrAndTxs
+			if err := json.Unmarshal(body, &tmpAddress); err != nil { // Parse []byte to go struct pointer
+				invest.logger.Println("Can not unmarshal JSON")
+				invest.logger.Println(string(body))
+			}
+
+			return tmpAddress, nil
+		}
+
+	}
+	return btcAddrAndTxs{}, fmt.Errorf("Baad")
+
+}
+
 func lookupBTCAddress(invest *Investigation, identifier string, tags []string) (Address, error) {
 	// https://blockchain.info/rawaddr/$bitcoin_address
-	url := fmt.Sprintf("https://blockchain.info/rawaddr/%s", identifier)
-	res, err := http.Get(url)
-	if err != nil {
-		invest.logger.Fatalln(err)
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	var tmpAddress btcAddrAndTxs
-	if err := json.Unmarshal(body, &tmpAddress); err != nil { // Parse []byte to go struct pointer
-		invest.logger.Println("Can not unmarshal JSON")
-		invest.logger.Println(string(body))
-		return Address{}, err
-	}
+	tmpAddress, _ := btcHelper(invest, identifier)
 
 	return Address{
-		Identifier: tmpAddress.Address,
+		Identifier: tmpAddress.Hash160,
 		Tags:       tags,
 		Balance:    float64(tmpAddress.FinalBalance),
 	}, nil
 }
 
-// TODO
 func lookupBTCtransaction(
 	invest *Investigation,
-	identifier string,
-	tags []string,
+	identifier *Address,
 ) ([]Transaction, error) {
-	url := fmt.Sprintf("https://blockchain.info/rawaddr/%s", identifier)
-	res, err := http.Get(url)
-	if err != nil {
-		invest.logger.Fatalln(err)
-	}
+	tmpAddress, _ := btcHelper(invest, identifier.Identifier)
 
-	body, err := ioutil.ReadAll(res.Body)
-	var tmpAddress btcAddrAndTxs
-	if err := json.Unmarshal(body, &tmpAddress); err != nil { // Parse []byte to go struct pointer
-		invest.logger.Println("Can not unmarshal JSON")
-		invest.logger.Println(string(body))
-		return []Transaction{}, err
-	}
+	txs := []Transaction{}
+	for _, t := range tmpAddress.Txs {
+		// Extract biggest outpout
+		to := ""
+		bb := 0.0
+		for _, r := range t.Out {
+			bb2 := float64(r.Value)
+			if bb2 > bb {
+				bb = bb2
+				to = r.Hash
+			}
+		}
 
-	// TODO
-	//txs := []Transaction{}
-	//for _, t := range tmpAddress.Txs {
-	//}
+		v := float64(t.Inputs[0].PrevOut.Value)
+		txs = append(txs, Transaction{
+			From:  t.Inputs[0].PrevOut.Hash,
+			Value: v,
+			To:    to,
+		})
+	}
 
 	return []Transaction{}, nil
 }
